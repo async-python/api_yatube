@@ -1,12 +1,11 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from .serializers import PostSerializer
-from posts.models import User, Post
+from .serializers import PostSerializer, CommentSerializer
+from posts.models import Post, Comment
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
 
     def list(self, request, *args, **kwargs):
@@ -21,19 +20,24 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, *args, **kwargs):
-        post = Post.objects.get(id=id)
+    def retrieve(self, request, *args, **kwargs):
+        post = Post.objects.get(id=kwargs['pk'])
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
+
+    def update(self, request, **kwargs):
+        post = Post.objects.get(id=kwargs['pk'])
         serializer = PostSerializer(post, data=request.data, partial=True)
         if serializer.is_valid():
             if post.author != request.user:
-                return Response(serializer.errors,
-                                status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    serializer.errors, status=status.HTTP_403_FORBIDDEN)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, *args, **kwargs):
-        post = Post.objects.get(id=id)
+    def destroy(self, request, **kwargs):
+        post = Post.objects.get(id=kwargs['pk'])
         if post.author != request.user:
             return Response(request.data, status=status.HTTP_403_FORBIDDEN)
         post.delete()
