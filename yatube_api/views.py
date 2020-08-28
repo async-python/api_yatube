@@ -1,3 +1,4 @@
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from .serializers import PostSerializer, CommentSerializer
@@ -49,10 +50,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_post(**kwargs):
-        posts = Post.objects.filter(id=kwargs['pk'])
-        if posts.exists():
-            return posts[0]
-        return None
+        return get_object_or_404(Post, id=kwargs['pk'])
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -101,8 +99,5 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_comment(**kwargs):
-        comments = Comment.objects.filter(
-            id=kwargs['pk'], post_id=kwargs['post_id'])
-        if comments.exists():
-            return comments[0]
-        return None
+        return get_object_or_404(
+            Comment, id=kwargs['pk'], post_id=kwargs['post_id'])
