@@ -9,8 +9,7 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = Post.objects.all()
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(self.queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -50,7 +49,10 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_post(**kwargs):
-        return Post.objects.filter(id=kwargs['pk'])[0]
+        posts = Post.objects.filter(id=kwargs['pk'])
+        if posts.exists():
+            return posts[0]
+        return None
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -99,6 +101,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_comment(**kwargs):
-        comment = Comment.objects.filter(
-            id=kwargs['pk'], post_id=kwargs['post_id'])[0]
-        return comment
+        comments = Comment.objects.filter(
+            id=kwargs['pk'], post_id=kwargs['post_id'])
+        if comments.exists():
+            return comments[0]
+        return None
